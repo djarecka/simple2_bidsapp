@@ -13,7 +13,7 @@ import logging
 import subprocess
 
 from click.testing import CliRunner
-from src.run import cli
+from src.freesurfer.run import cli
 
 
 @pytest.fixture
@@ -123,8 +123,8 @@ def mock_fs_version():
         yield mock
 
 
-@patch('src.run.BIDSLayout')
-@patch('src.run.FreeSurferWrapper')
+@patch('src.freesurfer.run.BIDSLayout')
+@patch('src.freesurfer.run.FreeSurferWrapper')
 @patch('subprocess.run')
 @patch.dict('os.environ', {
     'FREESURFER_HOME': '/dummy/path',
@@ -219,7 +219,7 @@ def test_custom_freesurfer_dir(bids_dataset, output_dir, freesurfer_license):
     with open(Path(bids_dataset) / "dataset_description.json", "w") as f:
         json.dump(dataset_description, f)
 
-    with patch("src.run.BIDSLayout") as mock_layout, \
+    with patch("src.freesurfer.run.BIDSLayout") as mock_layout, \
          patch("src.freesurfer.wrapper.FreeSurferWrapper") as mock_wrapper, \
          patch("subprocess.run") as mock_nidm, \
          patch("src.utils.get_freesurfer_version") as mock_fs_version, \
@@ -277,8 +277,8 @@ def test_skip_nidm(bids_dataset, output_dir, freesurfer_license):
         json.dump(dataset_description, f)
 
     # Change the patch location to where it's imported in run.py
-    with patch('src.run.FreeSurferWrapper') as mock_wrapper, \
-         patch('src.run.BIDSLayout') as mock_layout, \
+    with patch('src.freesurfer.run.FreeSurferWrapper') as mock_wrapper, \
+         patch('src.freesurfer.run.BIDSLayout') as mock_layout, \
          patch('subprocess.run') as mock_nidm, \
          patch('src.utils.get_freesurfer_version') as mock_fs_version, \
          patch("os.environ", {"FREESURFER_HOME": "/dummy/path"}):
@@ -338,10 +338,10 @@ def test_error_handling(bids_dataset, output_dir, freesurfer_license):
     with open(Path(bids_dataset) / "dataset_description.json", "w") as f:
         json.dump(dataset_description, f)
 
-    with patch('src.run.BIDSLayout') as mock_layout, \
-         patch('src.run.FreeSurferWrapper') as mock_wrapper, \
+    with patch('src.freesurfer.run.BIDSLayout') as mock_layout, \
+         patch('src.freesurfer.run.FreeSurferWrapper') as mock_wrapper, \
          patch('subprocess.run') as mock_nidm, \
-         patch('src.run.get_version_info') as mock_version_info, \
+         patch('src.freesurfer.run.get_version_info') as mock_version_info, \
          patch("os.environ", {"FREESURFER_HOME": "/dummy/path"}):
 
         # Set up mock returns
@@ -403,12 +403,12 @@ def test_verbose_output(bids_dataset, output_dir, freesurfer_license):
     with open(Path(bids_dataset) / "dataset_description.json", "w") as f:
         json.dump(dataset_description, f)
 
-    with patch("src.run.BIDSLayout") as mock_layout, \
-         patch("src.run.FreeSurferWrapper") as mock_wrapper, \
+    with patch("src.freesurfer.run.BIDSLayout") as mock_layout, \
+         patch("src.freesurfer.run.FreeSurferWrapper") as mock_wrapper, \
          patch("subprocess.run") as mock_nidm, \
-         patch("src.run.get_version_info") as mock_version_info, \
+         patch("src.freesurfer.run.get_version_info") as mock_version_info, \
          patch("os.environ", {"FREESURFER_HOME": "/dummy/path"}), \
-         patch("src.run.setup_logging") as mock_setup_logging:
+         patch("src.freesurfer.run.setup_logging") as mock_setup_logging:
 
         # Set up mock returns
         mock_layout_instance = MagicMock()
@@ -477,10 +477,10 @@ def test_processing_summary(bids_dataset, output_dir, freesurfer_license):
     with open(Path(bids_dataset) / "dataset_description.json", "w") as f:
         json.dump(dataset_description, f)
 
-    with patch("src.run.BIDSLayout") as mock_layout, \
-         patch("src.run.FreeSurferWrapper") as mock_wrapper, \
+    with patch("src.freesurfer.run.BIDSLayout") as mock_layout, \
+         patch("src.freesurfer.run.FreeSurferWrapper") as mock_wrapper, \
          patch("subprocess.run") as mock_nidm, \
-         patch("src.run.get_version_info") as mock_version_info, \
+         patch("src.freesurfer.run.get_version_info") as mock_version_info, \
          patch("os.environ", {"FREESURFER_HOME": "/dummy/path"}):
 
         # Set up mock returns
@@ -535,7 +535,7 @@ def test_processing_summary(bids_dataset, output_dir, freesurfer_license):
 
 def test_invalid_subject(bids_dataset, output_dir, freesurfer_license):
     """Test handling of invalid subject label."""
-    with patch("src.run.BIDSLayout") as mock_layout, \
+    with patch("src.freesurfer.run.BIDSLayout") as mock_layout, \
          patch("src.freesurfer.wrapper.FreeSurferWrapper") as mock_wrapper, \
          patch("os.environ", {"FREESURFER_HOME": "/dummy/path"}):
 

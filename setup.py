@@ -5,69 +5,7 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 
-def build_docker():
-    """Build Docker container"""
-    print("Building Docker image...")
-    try:
-        subprocess.run(["docker", "build", "-t", "bids-freesurfer", "."], check=True)
-        print("Docker image built successfully")
-    except subprocess.CalledProcessError as e:
-        print(f"Docker build failed: {e}")
-        return False
-    return True
-
-
-def build_singularity(output_path=None):
-    """Build Singularity/Apptainer container"""
-    print("Building container image...")
-    try:
-        # Check for apptainer first (more common on clusters), then singularity
-        if (
-            subprocess.run(["which", "apptainer"], capture_output=True).returncode == 0
-        ):
-            print("\nDetected Apptainer on cluster environment.")
-            print("For cluster environments, please build directly with apptainer:")
-            print("\napptainer build --remote freesurfer.sif Singularity")
-            print("or")
-            print("apptainer build --fakeroot freesurfer.sif Singularity\n")
-            return False
-        elif (
-            subprocess.run(["which", "singularity"], capture_output=True).returncode == 0
-        ):
-            container_cmd = "singularity"
-        else:
-            print("Neither apptainer nor singularity found. Cannot build image.")
-            return False
-
-        # Use custom output path if provided, otherwise use default
-        output_file = output_path if output_path else "freesurfer.sif"
-        output_file = str(Path(output_file).resolve())
-        
-        # Build command
-        cmd = [container_cmd, "build"]
-        
-        # For regular Singularity installations, try fakeroot if available
-        if subprocess.run(["which", "fakeroot"], capture_output=True).returncode == 0:
-            cmd.append("--fakeroot")
-        
-        # Add output file and Singularity definition
-        cmd.extend([output_file, "Singularity"])
-        
-        print(f"Running command: {' '.join(cmd)}")
-        
-        # Run the build command
-        subprocess.run(cmd, check=True)
-        print(f"Container image built successfully at: {output_file}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Build failed: {e}")
-        print("\nFor cluster environments, please build directly with apptainer:")
-        print("apptainer build --remote freesurfer.sif Singularity")
-        print("or")
-        print("apptainer build --fakeroot freesurfer.sif Singularity")
-        return False
-
-
+# TODO: why is this here?
 def init_git_submodules():
     """Initialize git submodules if .git directory exists and --init-git flag is set"""
     if "--init-git" in sys.argv:
@@ -109,28 +47,30 @@ extras_require = {
     ],
 }
 
+# TODO: remove
 # Check if we're being called with a container build command
-if len(sys.argv) > 1 and sys.argv[1] in ["docker", "singularity", "containers"]:
-    command = sys.argv[1]
-    # Remove the custom argument so setup() doesn't see it
-    sys.argv.pop(1)
+# if len(sys.argv) > 1 and sys.argv[1] in ["docker", "singularity", "containers"]:
+#     command = sys.argv[1]
+#     # Remove the custom argument so setup() doesn't see it
+#     sys.argv.pop(1)
+#
+#     if command == "docker":
+#         build_docker()
+#     elif command == "singularity":
+#         # Check for custom output path in the next argument
+#         output_path = None
+#         if len(sys.argv) > 1 and not sys.argv[1].startswith('-'):
+#             output_path = sys.argv.pop(1)
+#         build_singularity(output_path)
+#     elif command == "containers":
+#         build_docker()
+#         build_singularity()
+#
+#     # Exit if we were just building containers
+#     if len(sys.argv) == 1:
+#         sys.exit(0)
 
-    if command == "docker":
-        build_docker()
-    elif command == "singularity":
-        # Check for custom output path in the next argument
-        output_path = None
-        if len(sys.argv) > 1 and not sys.argv[1].startswith('-'):
-            output_path = sys.argv.pop(1)
-        build_singularity(output_path)
-    elif command == "containers":
-        build_docker()
-        build_singularity()
-
-    # Exit if we were just building containers
-    if len(sys.argv) == 1:
-        sys.exit(0)
-
+# TODO: why is it here, i think it is always called?
 # Initialize git submodules only if explicitly requested
 init_git_submodules()
 
@@ -138,8 +78,7 @@ setup(
     name="bids-freesurfer",
     version="0.1.0",
     description="BIDS App for FreeSurfer with NIDM Output",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="ReproNim Team",
     packages=find_packages(),
     include_package_data=True,
     license="MIT",
