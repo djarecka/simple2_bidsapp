@@ -15,6 +15,8 @@ import subprocess
 import click
 from bids import BIDSLayout
 
+from src.fsl.nipype_simple_workflow import create_workflow, execute_workflow
+
 # from src.freesurfer.wrapper import FreeSurferWrapper
 # from src.utils import setup_logging, get_version_info
 #
@@ -264,6 +266,13 @@ def process_session(
     help='The label of the session to analyze (including "ses-" prefix, e.g., "ses-01"). Only used with "session" analysis level.',
 )
 @click.option(
+    "--nipype_plugin", "--nipype-plugin", default="MultiProc",
+    help='Plugin to use with Nipype engine (default: "MultiProc").',
+)
+@click.option(
+    '--nipype_plugin_args', '--nipype-plugin-args', type=str,
+    help='Plugin arguments for Nipype engine as JSON string')
+@click.option(
     "--skip-bids-validation",
     is_flag=True, 
     help="Skip BIDS validation."
@@ -276,6 +285,8 @@ def cli(
     analysis_level,
     participant_label,
     session_label,
+    nipype_plugin,
+    nipype_plugin_args,
     skip_bids_validation,
     skip_nidm,
     verbose,
@@ -298,12 +309,19 @@ def cli(
     working_dir = Path(output_dir) / "working"
     sink_dir.mkdir(exist_ok=True, parents=True)
     working_dir.mkdir(exist_ok=True, parents=True)
+    if nipype_plugin_args:
+        try:
+            nipype_plugin_args = json.loads(nipype_plugin_args)
+        except json.JSONDecodeError as e:
+            raise click.BadParameter(f"Invalid JSON for nipype_plugin_args: {e}")
 
-    current_dir = Path(__file__).resolve().parent
-    
+
     if analysis_level == "participant":
-        subprocess.run(["python", str(current_dir / "../simple_workflow/run_demo_workflow.py"), "--dataset_dir", bids_dir,
-                        "--output_dir", str(sink_dir), "--work_dir", str(working_dir), "--subject_id", participant_label])
+        input_file = Path(bids_dir) / participant_label / "anat" / f"{participant_label}_T1w.nii.gz"
+
+        wf = create_workflow(participant_label, sink_dir, input_file=str(input_file))
+        execute_workflow(workflow=wf, working_dir=working_dir, plugin=nipype_plugin, plugin_args=nipype_plugin_args)
+
     # elif analysis_level == "session":
     #     if not participant_label or not session_label:
     #         logger.error("Both participant and session labels are required for session-level analysis")

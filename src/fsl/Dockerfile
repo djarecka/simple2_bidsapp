@@ -4,9 +4,7 @@ RUN mkdir -p /opt/fsl_wrapper
 
 COPY . /opt/fsl_wrapper
 
-RUN pip install --no-cache-dir -r /opt/fsl_wrapper/requirements.txt && \
-    git clone --branch updates --single-branch https://github.com/djarecka/simple_workflow.git /opt/simple_workflow && \
-     pip install --no-cache-dir nipype pandas
+RUN pip install --no-cache-dir -r /opt/fsl_wrapper/requirements.txt
 
 WORKDIR /opt/fsl_wrapper
 
